@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Appenders>
+    <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+        <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout pattern="${LOG_PATTERN}"/>
+    </Console>
+    <!-- Rolling File Appender -->
+    <RollingFile name="AppDebugLogs" fileName="${appsDebugLogsFilename}"
+                 filePattern="${appsDebugLogsFilenamePattern}">
+        <!--
+            https://logging.apache.org/log4j/2.x/manual/customloglevels.html
+        -->
+        <Filters>
+            <LevelRangeFilter minLevel="WARN" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Filters>
+        <PatternLayout pattern="${LOG_PATTERN}"/>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="10MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+    <RollingFile name="AppErrorLogs" fileName="${appsErrorLogsFilename}"
+                 filePattern="${appsErrorLogsFilenamePattern}">
+        <LevelRangeFilter minLevel="FATAL" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </PatternLayout>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="10MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+    <RollingFile name="VendorInfoLogs" fileName="${vendorInfoLogsFilename}"
+                 filePattern="${vendorInfoLogsFilenamePattern}">
+        <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </PatternLayout>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="10MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+    <RollingFile name="VendorErrorLogs" fileName="${vendorErrorLogsFilename}"
+                 filePattern="${vendorErrorLogsFilenamePattern}">
+        <LevelRangeFilter minLevel="FATAL" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        <PatternLayout>
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </PatternLayout>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="10MB"/>
+        </Policies>
+        <DefaultRolloverStrategy max="10"/>
+    </RollingFile>
+</Appenders>

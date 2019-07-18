@@ -1,0 +1,14 @@
+{
+    "widget": "confirmAction",
+    "message": "$message",
+    "yesOption": {
+        "message": "Yes",
+        "value": "yes"
+        },
+    "noOption": {
+        "message": "No",
+        "value": "no"
+        },
+    "yesResponse": "perform event delete",
+    "noResponse": "cancel delete event"
+}

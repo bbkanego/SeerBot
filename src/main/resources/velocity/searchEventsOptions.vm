@@ -1,0 +1,21 @@
+{
+    "widget": "options",
+    "heading": "Here's what you can do",
+    "rows": [
+            {
+                "cols": [{
+                    "col": "option1",
+                    "colName": "Search events",
+                    "clickUrl": "/admin/events"
+                    }
+                ]
+            },
+            {
+                "cols": [{
+                "col": "option2",
+                "colName": "Search events by going to Search All Events menu"
+                }
+                ]
+            }
+    ]
+}
