@@ -1,15 +1,12 @@
 package com.seerlogics.chatbot.config;
 
 import com.lingoace.exception.config.ConfigurationException;
-import com.seerlogics.chatbot.mutters.SeerBot;
-import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.velocity.app.VelocityEngine;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,12 +30,10 @@ import java.util.Properties;
 @EnableWebMvc
 public class SpringConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private StartUpConfiguration startUpConfiguration;
+    private final StartUpConfiguration startUpConfiguration;
 
-    @Bean
-    public SeerBot setupEventGenieBot() {
-        return new SeerBot(new SeerBotConfiguration());
+    public SpringConfig(StartUpConfiguration startUpConfiguration) {
+        this.startUpConfiguration = startUpConfiguration;
     }
 
     @Bean

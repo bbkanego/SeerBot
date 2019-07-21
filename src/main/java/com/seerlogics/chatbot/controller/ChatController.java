@@ -1,10 +1,9 @@
 package com.seerlogics.chatbot.controller;
 
 import com.seerlogics.chatbot.model.chat.ChatData;
-import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
 import com.seerlogics.chatbot.noggin.ChatSession;
 import com.seerlogics.chatbot.service.ChatNLPService;
-import com.seerlogics.commons.model.Configuration;
+import com.seerlogics.commons.model.LaunchInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,12 +30,9 @@ public class ChatController {
 
     private final ChatNLPService chatNLPService;
 
-    private final SeerBotConfiguration seerBotConfiguration;
-
-    public ChatController(ChatSession chatSession, ChatNLPService chatNLPService, SeerBotConfiguration seerBotConfiguration) {
+    public ChatController(ChatSession chatSession, ChatNLPService chatNLPService) {
         this.chatSession = chatSession;
         this.chatNLPService = chatNLPService;
-        this.seerBotConfiguration = seerBotConfiguration;
     }
 
     @GetMapping("/chats")
@@ -87,13 +83,13 @@ public class ChatController {
     private boolean containsValidHeaders(HttpServletRequest request) {
         String xBotId = request.getHeader("X-Bot-Id");
         String xCustomerOrigin = request.getHeader("X-Customer-Origin");
-        Configuration configuration = this.seerBotConfiguration.getBotConfiguration();
-        boolean allValid = configuration.getUniqueBotId().equals(xBotId) &&
-                xCustomerOrigin.equals(configuration.getAllowedOrigins());
+        LaunchInfo launchInfo = this.chatNLPService.getSeerBotConfiguration(xBotId).getLaunchInfo();
+        boolean allValid = launchInfo.getUniqueBotId().equals(xBotId) &&
+                xCustomerOrigin.equals(launchInfo.getAllowedOrigins());
         if (!allValid) {
             LOGGER.error("Invalid access: incoming xBotId = {} , actual botId = {} , xCustomerOrigin = {} "
-                            + ", Actual Origin = {} ", xBotId, configuration.getUniqueBotId(),
-                    xCustomerOrigin, configuration.getAllowedOrigins());
+                            + ", Actual Origin = {} ", xBotId, launchInfo.getUniqueBotId(),
+                    xCustomerOrigin, launchInfo.getAllowedOrigins());
         }
         return allValid;
     }

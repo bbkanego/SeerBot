@@ -1,25 +1,30 @@
 package com.seerlogics.chatbot.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.rabidgremlin.mutters.core.IntentMatch;
 import com.seerlogics.chatbot.exception.ConversationException;
+import com.seerlogics.chatbot.model.chat.ChatData;
+import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
+import com.seerlogics.chatbot.noggin.ChatSession;
+import com.seerlogics.chatbot.repository.chat.ChatRepository;
 import com.seerlogics.commons.model.Intent;
 import com.seerlogics.commons.model.IntentResponse;
-import com.seerlogics.chatbot.model.chat.ChatData;
-import com.seerlogics.chatbot.mutters.SeerBot;
-import com.seerlogics.chatbot.noggin.ChatSession;
+import com.seerlogics.commons.repository.BotRepository;
 import com.seerlogics.commons.repository.IntentRepository;
-import com.seerlogics.chatbot.repository.chat.ChatRepository;
+import com.seerlogics.commons.repository.LaunchInfoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -28,32 +33,67 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class ChatNLPService {
-    @Autowired
-    private ChatRepository chatRepository;
+    private final ChatRepository chatRepository;
 
-    @Autowired
-    private SeerBot seerBot;
+    private final VelocityEngine velocityEngine;
 
-    @Autowired
-    private VelocityEngine velocityEngine;
+    private final MessageSource messageSource;
+
+    private final IntentRepository intentRepository;
+
+    private final LaunchInfoRepository launchInfoRepository;
+
+    private final BotRepository botRepository;
+
+    // this will cache SeerBotConfiguration.
+    private Cache<String, SeerBotConfiguration> seerBotConfigurationCache;
+
+    public ChatNLPService(LaunchInfoRepository launchInfoRepository, BotRepository botRepository, ChatRepository chatRepository, VelocityEngine velocityEngine, MessageSource messageSource, IntentRepository intentRepository) {
+        this.launchInfoRepository = launchInfoRepository;
+        this.botRepository = botRepository;
+        this.chatRepository = chatRepository;
+        this.velocityEngine = velocityEngine;
+        this.messageSource = messageSource;
+        this.intentRepository = intentRepository;
+    }
 
     /**
-     * This needs to provided as a Java arg like "-Dseerchat.bottype=EVENT_BOT"
+     * https://stackoverflow.com/questions/11124856/using-guava-for-high-performance-thread-safe-caching
+     * https://github.com/google/guava/wiki/CachesExplained#timed-eviction
+     * https://github.com/google/guava/wiki/CachesExplained#Size-based-Eviction
      */
-    @Value("${seerchat.bottype}")
-    private String botType;
+    @PostConstruct
+    private void buildCache() {
+        /**
+         * The cache will be thread safe natively and will be accessed by 4 threads concurrently
+         */
+        seerBotConfigurationCache =
+                CacheBuilder.newBuilder().concurrencyLevel(4).maximumSize(100000)
+                        // expire items after 1 hour if not accessed in that time
+                        .expireAfterAccess(3600, TimeUnit.SECONDS).build();
+    }
+
+    @PreDestroy
+    private void destroyCache() {
+        seerBotConfigurationCache.invalidateAll();
+    }
 
     /**
-     * This needs to provided as a Java arg like "-Dseerchat.botOwnerId=354243"
+     * This will get the SeerBotConfiguration from cache if present or create a new one and put back
+     * in the cache.
+     *
+     * @param uniqueBotId
+     * @return
      */
-    @Value("${seerchat.botOwnerId}")
-    private String botOwnerId;
-
-    @Autowired
-    private MessageSource messageSource;
-
-    @Autowired
-    private IntentRepository intentRepository;
+    public SeerBotConfiguration getSeerBotConfiguration(String uniqueBotId) {
+        SeerBotConfiguration seerBotConfiguration = this.seerBotConfigurationCache.asMap().get(uniqueBotId);
+        if (seerBotConfiguration == null) {
+            seerBotConfiguration = new SeerBotConfiguration(uniqueBotId, intentRepository,
+                    launchInfoRepository, botRepository);
+            this.seerBotConfigurationCache.put(uniqueBotId, seerBotConfiguration);
+        }
+        return seerBotConfiguration;
+    }
 
     public ChatData generateChatBotResponse(ChatData inputChatRequest, ChatSession chatSession) {
         // Save the incoming message
@@ -68,7 +108,7 @@ public class ChatNLPService {
         // create new reply message and save that to the DB
         ChatData outChatData = new ChatData();
         //outChatData.setResponse(intentProcessor.nlpPipeline(inputChatRequest, chatSession));
-        IntentMatch match = seerBot.getSeerBotConfiguration().
+        IntentMatch match = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).
                 getIntentMatcher().match(inputChatRequest.getMessage(), chatSession.getContext(), null, new HashMap<>());
 
         outChatData.setMessage(inputChatRequest.getMessage());
@@ -93,7 +133,7 @@ public class ChatNLPService {
             String responseKey = chatSession.getCurrentStateMachineHandler().getCurrentState();
             outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey)));
         } else {
-            outChatData.setResponse(convertToVelocityResponse(getMessage(match)));
+            outChatData.setResponse(convertToVelocityResponse(getMessage(match, inputChatRequest)));
         }
 
         outChatData.setAccountId("ChatBot");
@@ -116,7 +156,8 @@ public class ChatNLPService {
     }
 
     public ChatData generateInitiateChatResponse(ChatData inChat, ChatSession chatSession) {
-        Intent initiateIntent = this.intentRepository.findByIntent(inChat.getMessage(), Long.parseLong(botOwnerId));
+        Intent initiateIntent = this.intentRepository.findByIntent(inChat.getMessage(),
+                this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot().getOwner().getId());
         ChatData initiateResponse = new ChatData();
         initiateResponse.setAccountId("ChatBot");
         initiateResponse.setMessage(inChat.getMessage());
@@ -126,7 +167,7 @@ public class ChatNLPService {
         } else {
             initiateResponse.setResponse(
                     convertToVelocityResponse(messageSource.getMessage("res_initialResponse",
-                                        new Object[]{}, Locale.getDefault())));
+                            new Object[]{}, Locale.getDefault())));
         }
         initiateResponse.setChatSessionId(chatSession.getCurrentSessionId());
         initiateResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
@@ -142,7 +183,7 @@ public class ChatNLPService {
      * @param intent
      * @return
      */
-    private String getMessage(IntentMatch intent) {
+    private String getMessage(IntentMatch intent, ChatData inputChatRequest) {
         if (intent != null) {
             Object matchingIntent = intent.getIntent();
             IntentResponse responseToSend;
@@ -162,7 +203,8 @@ public class ChatNLPService {
             } else if (matchingIntent != null) { // this will happen when there is a MayBe match
                 com.rabidgremlin.mutters.core.Intent maybeIntent = intent.getIntent();
                 String mayBeIntentName = maybeIntent.getName();
-                Intent dbMayBeIntent = intentRepository.findByIntent(mayBeIntentName, Long.parseLong(botOwnerId));
+                Intent dbMayBeIntent = intentRepository.findByIntent(mayBeIntentName,
+                        this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getOwner().getId());
                 if (dbMayBeIntent != null) {
                     List<IntentResponse> intentResponses =
                             dbMayBeIntent.getResponses().stream().filter(
@@ -173,20 +215,22 @@ public class ChatNLPService {
                     }
                     responseToSend = intentResponses.get(0);
                 } else { // if no MayBe intent defined in DB.
-                    responseToSend = this.getDoNotUnderstandIntent();
+                    responseToSend = this.getDoNotUnderstandIntent(inputChatRequest);
                 }
             } else { // catch ALL
-                responseToSend = this.getDoNotUnderstandIntent();
+                responseToSend = this.getDoNotUnderstandIntent(inputChatRequest);
             }
             return responseToSend.getResponse();
         } else {
-            return getDoNotUnderstandIntent().getResponse();
+            return getDoNotUnderstandIntent(inputChatRequest).getResponse();
         }
     }
 
-    private IntentResponse getDoNotUnderstandIntent() {
+    private IntentResponse getDoNotUnderstandIntent(ChatData inputChatRequest) {
+        Long botOwnerId = this.getSeerBotConfiguration(inputChatRequest.getAuthCode())
+                .getTargetBot().getOwner().getId();
         Intent doNotUnderstandIntent =
-                                intentRepository.findByIntent("DoNotUnderstandIntent", Long.parseLong(botOwnerId));
+                intentRepository.findByIntent("DoNotUnderstandIntent", botOwnerId);
         List<IntentResponse> intentResponses =
                 doNotUnderstandIntent.getResponses().stream().filter(intentResponse ->
                         intentResponse.getLocale().contains("en")).collect(Collectors.toList());
