@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class ChatNLPService {
+
+    private static final String CHAT_BOT = "ChatBot";
+
     private final ChatRepository chatRepository;
 
     private final VelocityEngine velocityEngine;
@@ -103,6 +106,11 @@ public class ChatNLPService {
             inputChatRequest.setPreviousChat(previousChat);
             chatSession.setPreviousChat(previousChat);
         }
+        String ownerUserName =
+                this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getOwner().getUserName();
+        // for incoming chats both accountId and owner account will be same
+        inputChatRequest.setAccountId(ownerUserName);
+        inputChatRequest.setOwnerAccountId(ownerUserName);
         ChatData savedInputChat = chatRepository.save(inputChatRequest);
 
         // create new reply message and save that to the DB
@@ -136,7 +144,9 @@ public class ChatNLPService {
             outChatData.setResponse(convertToVelocityResponse(getMessage(match, inputChatRequest)));
         }
 
-        outChatData.setAccountId("ChatBot");
+        // out chats will have CHAT_BOT accountId
+        outChatData.setAccountId(CHAT_BOT);
+        outChatData.setOwnerAccountId(ownerUserName);
         outChatData.setCurrentSessionId(chatSession.getCurrentSessionId());
         outChatData.setChatSessionId(inputChatRequest.getChatSessionId());
         outChatData.setPreviousChatId(String.valueOf(savedInputChat.getId()));
@@ -159,7 +169,6 @@ public class ChatNLPService {
         Intent initiateIntent = this.intentRepository.findByIntent(inChat.getMessage(),
                 this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot().getOwner().getId());
         ChatData initiateResponse = new ChatData();
-        initiateResponse.setAccountId("ChatBot");
         initiateResponse.setMessage(inChat.getMessage());
         if (initiateIntent != null) {
             List<IntentResponse> response = new ArrayList<>(initiateIntent.getResponses());
@@ -172,6 +181,10 @@ public class ChatNLPService {
         initiateResponse.setChatSessionId(chatSession.getCurrentSessionId());
         initiateResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
         initiateResponse.setAuthCode(inChat.getAuthCode());
+        String ownerUserName =
+                this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot().getOwner().getUserName();
+        initiateResponse.setAccountId(CHAT_BOT);
+        initiateResponse.setOwnerAccountId(ownerUserName);
         chatRepository.save(initiateResponse);
         return initiateResponse;
     }

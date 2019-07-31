@@ -91,6 +91,11 @@ public class SeerBotConfiguration {
             }
         }
 
+        this.loadSupportingModelsAndUtils(botJsonConfiguration, intentRepository);
+    }
+
+    private void loadSupportingModelsAndUtils(BotConfiguration botJsonConfiguration,
+                                                                        IntentRepository intentRepository) {
         LOGGER.debug("\n*********Set up tokenizer\n");
 
         OpenNLPTokenizer openNLPTokenizer = null;

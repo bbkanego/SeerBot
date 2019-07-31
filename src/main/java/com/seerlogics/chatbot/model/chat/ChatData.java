@@ -14,6 +14,9 @@ public class ChatData extends BaseModel {
     @Column(nullable = false)
     private String message;
 
+    @Column(name = "OWNER_ACCOUNT_ID")
+    private String ownerAccountId;
+
     @Column(name = "ACCOUNT_ID")
     private String accountId;
 
@@ -36,6 +39,14 @@ public class ChatData extends BaseModel {
 
     @Column(nullable = true, length = 3000)
     private String response;
+
+    public String getOwnerAccountId() {
+        return ownerAccountId;
+    }
+
+    public void setOwnerAccountId(String ownerAccountId) {
+        this.ownerAccountId = ownerAccountId;
+    }
 
     public String getResponse() {
         return response;
