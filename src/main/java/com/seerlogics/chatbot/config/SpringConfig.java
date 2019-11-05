@@ -9,6 +9,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
@@ -27,6 +28,7 @@ import java.util.Properties;
  * https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/EnableWebMvc.html
  */
 @Configuration
+@ComponentScan(basePackages = "com.seerlogics")
 @EnableWebMvc
 public class SpringConfig implements WebMvcConfigurer {
 

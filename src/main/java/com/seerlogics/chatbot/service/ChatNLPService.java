@@ -4,10 +4,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.rabidgremlin.mutters.core.IntentMatch;
 import com.seerlogics.chatbot.exception.ConversationException;
-import com.seerlogics.chatbot.model.chat.ChatData;
+import com.seerlogics.chatbot.model.ChatData;
+import com.seerlogics.chatbot.model.Transaction;
 import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
 import com.seerlogics.chatbot.noggin.ChatSession;
-import com.seerlogics.chatbot.repository.chat.ChatRepository;
+import com.seerlogics.chatbot.repository.ChatRepository;
+import com.seerlogics.chatbot.repository.TransactionRepository;
+import com.seerlogics.commons.model.Account;
 import com.seerlogics.commons.model.Intent;
 import com.seerlogics.commons.model.IntentResponse;
 import com.seerlogics.commons.repository.BotRepository;
@@ -48,16 +51,22 @@ public class ChatNLPService {
 
     private final BotRepository botRepository;
 
+    private final TransactionRepository transactionRepository;
+
     // this will cache SeerBotConfiguration.
     private Cache<String, SeerBotConfiguration> seerBotConfigurationCache;
 
-    public ChatNLPService(LaunchInfoRepository launchInfoRepository, BotRepository botRepository, ChatRepository chatRepository, VelocityEngine velocityEngine, MessageSource messageSource, IntentRepository intentRepository) {
+    public ChatNLPService(LaunchInfoRepository launchInfoRepository, BotRepository botRepository,
+                          ChatRepository chatRepository, VelocityEngine velocityEngine,
+                          MessageSource messageSource, IntentRepository intentRepository,
+                          TransactionRepository transactionRepository) {
         this.launchInfoRepository = launchInfoRepository;
         this.botRepository = botRepository;
         this.chatRepository = chatRepository;
         this.velocityEngine = velocityEngine;
         this.messageSource = messageSource;
         this.intentRepository = intentRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     /**
@@ -106,8 +115,10 @@ public class ChatNLPService {
             inputChatRequest.setPreviousChat(previousChat);
             chatSession.setPreviousChat(previousChat);
         }
-        String ownerUserName =
-                this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getOwner().getUserName();
+
+        Account owner = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getOwner();
+
+        String ownerUserName = owner.getUserName();
         // for incoming chats both accountId and owner account will be same
         inputChatRequest.setAccountId(ownerUserName);
         inputChatRequest.setOwnerAccountId(ownerUserName);
@@ -153,6 +164,19 @@ public class ChatNLPService {
         outChatData.setPreviousChat(savedInputChat);
         outChatData.setAuthCode(inputChatRequest.getAuthCode());
         chatRepository.save(outChatData);
+
+        // finally save the transaction.
+        Transaction transaction = new Transaction();
+        transaction.setAccountId(owner.getId());
+        transaction.setTargetBotId(this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getId());
+        transaction.setSuccess(match != null);
+        if (match != null) {
+            transaction.setIntent(match.getIntent().getName());
+        } else {
+            transaction.setIntent("NO_MATCH");
+        }
+        transaction.setUtterance(inputChatRequest.getMessage());
+        transactionRepository.save(transaction);
 
         return outChatData;
     }

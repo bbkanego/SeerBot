@@ -1,9 +1,10 @@
 package com.seerlogics.chatbot.controller;
 
-import com.seerlogics.chatbot.model.chat.ChatData;
+import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.noggin.ChatSession;
 import com.seerlogics.chatbot.service.ChatNLPService;
 import com.seerlogics.commons.model.LaunchInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,13 @@ public class ChatController {
     @GetMapping("/chats")
     public ResponseEntity getChatHistory(HttpServletRequest request) {
         LOGGER.debug("Getting all chats now ----->>>>>>");
+
+        if (!this.isContainsValidHeaders(request)) {
+            Map<String, Boolean> errorResponse = new HashMap<>();
+            errorResponse.put("invalidAccess", true);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
         List<ChatData> chatDataList = chatNLPService.findAll();
         return new ResponseEntity<>(chatDataList, HttpStatus.OK);
     }
@@ -54,25 +62,27 @@ public class ChatController {
                                       HttpServletResponse response) {
         LOGGER.debug(">>>> current session object = {} ", request.getSession());
 
-        if (!this.containsValidHeaders(request)) {
+        if (!this.isContainsValidHeaders(request)) {
             Map<String, Boolean> errorResponse = new HashMap<>();
             errorResponse.put("invalidAccess", true);
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
-        if (chatSession.getCurrentSessionId() == null) {
+        if (StringUtils.isBlank(chatSession.getCurrentSessionId())) {
             final Cookie cookie = createCookie(request);
             // add cookie to the response
             response.addCookie(cookie);
             chatSession.setAuthCode(incomingChatData.getAuthCode());
             chatSession.setCurrentSessionId(cookie.getValue());
         }
+
         if ("Initiate".equals(incomingChatData.getMessage())) {
             ChatData initiateResponse = chatNLPService.generateInitiateChatResponse(incomingChatData, chatSession);
             initiateResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
             initiateResponse.setChatSessionId(chatSession.getCurrentSessionId());
             return new ResponseEntity<>(initiateResponse, HttpStatus.OK);
         }
+
         ChatData chatResponse = chatNLPService.generateChatBotResponse(incomingChatData, chatSession);
         chatResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
         chatResponse.setChatSessionId(chatSession.getCurrentSessionId());
@@ -80,9 +90,15 @@ public class ChatController {
         return new ResponseEntity<>(chatResponse, HttpStatus.OK);
     }
 
-    private boolean containsValidHeaders(HttpServletRequest request) {
+    private boolean isContainsValidHeaders(HttpServletRequest request) {
         String xBotId = request.getHeader("X-Bot-Id");
         String xCustomerOrigin = request.getHeader("X-Customer-Origin");
+
+        if (StringUtils.isBlank(xBotId) || StringUtils.isBlank(xCustomerOrigin)) {
+            LOGGER.error("Either X-Bot-Id or X-Customer-Origin is invalid");
+            return false;
+        }
+
         LaunchInfo launchInfo = this.chatNLPService.getSeerBotConfiguration(xBotId).getLaunchInfo();
         boolean allValid = launchInfo.getUniqueBotId().equals(xBotId) &&
                 xCustomerOrigin.equals(launchInfo.getAllowedOrigins());

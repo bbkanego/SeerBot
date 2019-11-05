@@ -1,7 +1,7 @@
 package com.seerlogics.chatbot.noggin;
 
 import com.seerlogics.chatbot.exception.ConversationException;
-import com.seerlogics.chatbot.model.chat.ChatData;
+import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.statemachine.DeleteEventStateMachine;
 import com.seerlogics.chatbot.statemachine.SearchEventStateMachine;
 import com.seerlogics.chatbot.statemachine.StateMachineHandler;

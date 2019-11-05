@@ -27,7 +27,7 @@ import java.util.Map;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "chatBotEntityManagerFactory",
-        basePackages = {"com.seerlogics.chatbot.repository.chat"}
+        basePackages = {"com.seerlogics.chatbot.repository"}
 )
 public class ChatDbConfig {
 
@@ -53,7 +53,7 @@ public class ChatDbConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.seerlogics.chatbot.model.chat")
+                .packages("com.seerlogics.chatbot")
                 .persistenceUnit("chatbot")
                 .properties(properties)
                 .build();

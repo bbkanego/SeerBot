@@ -1,23 +1,24 @@
 package com.seerlogics.chatbot.service;
 
 import com.lingoace.common.NLPProcessingException;
-import com.seerlogics.chatbot.noggin.ChatSession;
 import com.rabidgremlin.mutters.core.session.Session;
+import com.seerlogics.chatbot.noggin.ChatSession;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.List;
 
 /**
  * Created by bkane on 5/27/18.
  */
 @Service
+@Transactional
 public class ChatDataFetchService {
     @Autowired
     private RestTemplate restTemplate;

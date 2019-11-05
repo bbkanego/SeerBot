@@ -143,9 +143,9 @@ public class SeerBotConfiguration {
         LOGGER.debug("\n*********get customIntentUtterances\n");
 
         List<com.seerlogics.commons.model.Intent> customIntentUtterances =
-                intentRepository.findIntentsByCodeTypeAndOwnerId(targetBot.getCategory().getCode(),
+                intentRepository.findIntentsByCodeTypeAndOwnerId(this.targetBot.getCategory().getCode(),
                         com.seerlogics.commons.model.Intent.INTENT_TYPE.CUSTOM.name(),
-                        targetBot.getOwner().getId());
+                        this.targetBot.getOwner().getId());
         for (com.seerlogics.commons.model.Intent customIntentUtterance : customIntentUtterances) {
             Intent currentIntent = new Intent(customIntentUtterance.getIntent(), customIntentUtterance);
             matcher.addIntent(currentIntent);
