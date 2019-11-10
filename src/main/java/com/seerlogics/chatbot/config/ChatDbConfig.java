@@ -31,8 +31,14 @@ import java.util.Map;
 )
 public class ChatDbConfig {
 
-    @Value("${chatbot.jpa.hibernate.ddl-auto:update}")
+    @Value("${chatbot.datasource.hibernate.ddl-auto:update}")
     private String hibernateHbm2ddlValue;
+
+    @Value("${chatbot.datasource.hibernate.jdbc.time_zone:UTC}")
+    private String hibernateJDBCTimezone;
+
+    @Value("${chatbot.datasource.hibernate.show_sql:false}")
+    private Boolean hibernateShowSQL;
 
     @Primary
     @Bean(name = "chatBotDataSource")
@@ -50,6 +56,8 @@ public class ChatDbConfig {
     ) {
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", this.hibernateHbm2ddlValue);
+        properties.put("hibernate.jdbc.time_zone", this.hibernateJDBCTimezone);
+        properties.put("hibernate.show_sql", this.hibernateShowSQL);
 
         return builder
                 .dataSource(dataSource)
