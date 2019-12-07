@@ -107,6 +107,10 @@ public class ChatNLPService {
         return seerBotConfiguration;
     }
 
+    public void invalidateCache() {
+        this.seerBotConfigurationCache.invalidateAll();
+    }
+
     public ChatData generateChatBotResponse(ChatData inputChatRequest, ChatSession chatSession) {
         // Save the incoming message
         String previousChatId = inputChatRequest.getPreviousChatId();

@@ -57,6 +57,16 @@ public class ChatController {
         return new ResponseEntity<>(chatDataList, HttpStatus.OK);
     }
 
+    @GetMapping("/invalidateCache/{authCode}")
+    public ResponseEntity getChatsByChatSessionId(@PathVariable String authCode) {
+        if ("2478360d-530d-4435-bf49-bf07c0e7e35b".equals(authCode)) {
+            this.chatNLPService.invalidateCache();
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping("/chats")
     public ResponseEntity chatMessage(@RequestBody ChatData incomingChatData, HttpServletRequest request,
                                       HttpServletResponse response) {
