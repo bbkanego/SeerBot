@@ -14,31 +14,31 @@ public class StartUpConfiguration {
     /**
      * This needs to provided as a Java arg like "--seerchat.allowedOrigins=http://localhost:4300,http://localhost:4320"
      */
-    @Value("${seerchat.allowedOrigins}")
+    @Value("${seerchat.allowedOrigins: NONE}")
     private String allowedOrigins;
 
     /**
      * This needs to provided as a Java arg like "--seerchat.botPort=8099"
      */
-    @Value("${seerchat.botPort}")
+    @Value("${seerchat.botPort: NONE}")
     private String botPort;
 
     /**
      * This needs to provided as a Java arg like "--seerchat.bottype=EVENT_BOT"
      */
-    @Value("${seerchat.bottype}")
+    @Value("${seerchat.bottype: NONE}")
     private String botType;
 
     /**
      * This needs to provided as a Java arg like "--seerchat.botOwnerId=354243"
      */
-    @Value("${seerchat.botOwnerId}")
+    @Value("${seerchat.botOwnerId: NONE}")
     private String botOwnerId;
 
-    @Value("${seerchat.trainedModelId}")
+    @Value("${seerchat.trainedModelId: NONE}")
     private String trainedModelId;
 
-    @Value("${seerchat.botId}")
+    @Value("${seerchat.botId: NONE}")
     private String botId;
 
     public String getAllowedOrigins() {
