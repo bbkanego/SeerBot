@@ -107,6 +107,10 @@ public class ChatNLPService {
         return seerBotConfiguration;
     }
 
+    public void removeSeerBotConfiguration(String uniqueBotId) {
+        this.seerBotConfigurationCache.asMap().remove(uniqueBotId);
+    }
+
     public void invalidateCache() {
         this.seerBotConfigurationCache.invalidateAll();
     }

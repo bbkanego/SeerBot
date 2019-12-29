@@ -32,6 +32,7 @@ import java.util.Properties;
 @EnableWebMvc
 public class SpringConfig implements WebMvcConfigurer {
 
+    public static final String UTF_8 = "UTF-8";
     private final StartUpConfiguration startUpConfiguration;
 
     public SpringConfig(StartUpConfiguration startUpConfiguration) {
@@ -47,7 +48,7 @@ public class SpringConfig implements WebMvcConfigurer {
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("bundle/messages");
-        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setDefaultEncoding(UTF_8);
         messageSource.setCacheMillis(10);
         return messageSource;
     }
@@ -66,8 +67,8 @@ public class SpringConfig implements WebMvcConfigurer {
     @Bean
     public VelocityEngine velocityEngine() throws Exception {
         Properties properties = new Properties();
-        properties.setProperty("input.encoding", "UTF-8");
-        properties.setProperty("output.encoding", "UTF-8");
+        properties.setProperty("input.encoding", UTF_8);
+        properties.setProperty("output.encoding", UTF_8);
         properties.setProperty("resource.loader", "class");
         properties.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         return new VelocityEngine(properties);

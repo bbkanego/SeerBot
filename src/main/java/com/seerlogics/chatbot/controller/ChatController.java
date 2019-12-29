@@ -1,5 +1,6 @@
 package com.seerlogics.chatbot.controller;
 
+import com.lingoace.spring.controller.BaseController;
 import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.noggin.ChatSession;
 import com.seerlogics.chatbot.service.ChatNLPService;
@@ -23,9 +24,10 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping(value = "/api")
-public class ChatController {
+public class ChatController extends BaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
+    public static final String AUTH_CODE = "2478360d-530d-4435-bf49-bf07c0e7e35b";
 
     private final ChatSession chatSession;
 
@@ -59,9 +61,9 @@ public class ChatController {
 
     @GetMapping("/invalidateCache/{authCode}")
     public ResponseEntity getChatsByChatSessionId(@PathVariable String authCode) {
-        if ("2478360d-530d-4435-bf49-bf07c0e7e35b".equals(authCode)) {
+        if (AUTH_CODE.equals(authCode)) {
             this.chatNLPService.invalidateCache();
-            return ResponseEntity.ok().build();
+            return returnSuccessResponse();
         } else {
             return ResponseEntity.badRequest().build();
         }
@@ -90,6 +92,7 @@ public class ChatController {
             ChatData initiateResponse = chatNLPService.generateInitiateChatResponse(incomingChatData, chatSession);
             initiateResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
             initiateResponse.setChatSessionId(chatSession.getCurrentSessionId());
+            //initiateResponse.setResponse(initiateResponse.getResponse().replace('"', '\"'));
             return new ResponseEntity<>(initiateResponse, HttpStatus.OK);
         }
 
@@ -98,6 +101,16 @@ public class ChatController {
         chatResponse.setChatSessionId(chatSession.getCurrentSessionId());
         LOGGER.debug(">>>> Response Object = {}", chatResponse);
         return new ResponseEntity<>(chatResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/chats/re-init/{authCode}/{uniqueBotId}")
+    public ResponseEntity reInitializeChatBot(@PathVariable String uniqueBotId, @PathVariable String authCode) {
+        if (AUTH_CODE.equals(authCode)) {
+            this.chatNLPService.removeSeerBotConfiguration(uniqueBotId);
+            return returnSuccessResponse();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     private boolean isContainsValidHeaders(HttpServletRequest request) {
