@@ -40,6 +40,9 @@ public class ChatDbConfig {
     @Value("${chatbot.datasource.hibernate.show_sql:false}")
     private Boolean hibernateShowSQL;
 
+    @Value("${chatbot.datasource.hibernate.naming.physical-strategy:com.seerlogics.commons.naming.CustomPhysicalNamingStrategy}")
+    private String namingStrategy;
+
     @Primary
     @Bean(name = "chatBotDataSource")
     @ConfigurationProperties(prefix = "chatbot.datasource")
@@ -58,6 +61,7 @@ public class ChatDbConfig {
         properties.put("hibernate.hbm2ddl.auto", this.hibernateHbm2ddlValue);
         properties.put("hibernate.jdbc.time_zone", this.hibernateJDBCTimezone);
         properties.put("hibernate.show_sql", this.hibernateShowSQL);
+        properties.put("hibernate.physical_naming_strategy", this.namingStrategy);
 
         return builder
                 .dataSource(dataSource)

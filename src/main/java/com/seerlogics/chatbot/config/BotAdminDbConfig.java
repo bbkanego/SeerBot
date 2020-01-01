@@ -45,6 +45,9 @@ public class BotAdminDbConfig {
         return DataSourceBuilder.create().build();
     }
 
+    @Value("${botadmin.datasource.hibernate.naming.physical-strategy:com.seerlogics.commons.naming.CustomPhysicalNamingStrategy}")
+    private String namingStrategy;
+
     @Bean(name = "botAdminEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
     entityManagerFactory(
@@ -56,6 +59,7 @@ public class BotAdminDbConfig {
         properties.put("hibernate.hbm2ddl.auto", this.hibernateHbm2ddlValue);
         properties.put("hibernate.jdbc.time_zone", this.hibernateJDBCTimezone);
         properties.put("hibernate.show_sql", this.hibernateShowSQL);
+        properties.put("hibernate.physical_naming_strategy", this.namingStrategy);
 
         return builder
                 .dataSource(dataSource)

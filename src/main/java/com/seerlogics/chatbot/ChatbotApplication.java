@@ -3,7 +3,6 @@ package com.seerlogics.chatbot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -15,6 +14,7 @@ import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Arrays;
@@ -39,14 +39,14 @@ import java.util.Arrays;
         ManagementWebSecurityAutoConfiguration.class})
 @EnableTransactionManagement
 // ApplicationRunner: https://memorynotfound.com/spring-boot-passing-command-line-arguments-example/
-public class ChatbotApplication implements ApplicationRunner {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ChatbotApplication.class);
+public class ChatbotApplication extends SpringBootServletInitializer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatbotApplication.class);
     
     public static void main(String[] args) {
         SpringApplication.run(ChatbotApplication.class, args);
     }
 
-    @Override
+    // @Override
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("Application started with command-line arguments: {}", Arrays.toString(args.getSourceArgs()));
         LOGGER.info("NonOptionArgs: {}", args.getNonOptionArgs());
