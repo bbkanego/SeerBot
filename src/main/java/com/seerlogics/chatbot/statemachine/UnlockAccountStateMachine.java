@@ -1,7 +1,5 @@
 package com.seerlogics.chatbot.statemachine;
 
-import com.seerlogics.chatbot.service.ChatDataFetchService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -60,31 +58,31 @@ public class UnlockAccountStateMachine extends UberStateMachine {
                 .source(UnlockAccountStates.START_UNLOCK_ACCOUNT).target(UnlockAccountStates.DOB_PROVIDED)
                 .event(UnlockAccountEvents.USER_PROVIDES_DOB)
                 .and()
-                        // check if the dob provided is valid
+                // check if the dob provided is valid
                 .withChoice()
                 .source(UnlockAccountStates.DOB_PROVIDED)
-                        // if bad dob
+                // if bad dob
                 .first(UnlockAccountStates.INVALID_DOB_PROVIDED, isInCorrectDOBProvidedGuard(), null)
-                        // if good dob
+                // if good dob
                 .last(UnlockAccountStates.VALID_DOB_PROVIDED)
                 .and()
-                        // if bad dob was provided, ask the user to enter again
+                // if bad dob was provided, ask the user to enter again
                 .withExternal().source(UnlockAccountStates.INVALID_DOB_PROVIDED).target(UnlockAccountStates.DOB_PROVIDED)
                 .event(UnlockAccountEvents.USER_PROVIDES_DOB)
                 .and()
-                        // if good dob was provided, ask the user to enter pin
+                // if good dob was provided, ask the user to enter pin
                 .withExternal().source(UnlockAccountStates.VALID_DOB_PROVIDED).target(UnlockAccountStates.PIN_PROVIDED)
                 .event(UnlockAccountEvents.USER_PROVIDES_PIN)
                 .and()
-                        // check the pin
+                // check the pin
                 .withChoice()
                 .source(UnlockAccountStates.PIN_PROVIDED)
-                        // if bad pin
+                // if bad pin
                 .first(UnlockAccountStates.INVALID_PIN_PROVIDED, isInCorrectPINProvidedGuard(), null)
-                        // if good pin
+                // if good pin
                 .last(UnlockAccountStates.ACCOUNT_UNLOCKED, unlockAccountAction())
                 .and()
-                        // if bad pin was provided, ask the user to enter again
+                // if bad pin was provided, ask the user to enter again
                 .withExternal().source(UnlockAccountStates.INVALID_PIN_PROVIDED).target(UnlockAccountStates.PIN_PROVIDED)
                 .event(UnlockAccountEvents.USER_PROVIDES_PIN)
                 .and()
