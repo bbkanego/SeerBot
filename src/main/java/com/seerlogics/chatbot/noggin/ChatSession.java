@@ -1,16 +1,14 @@
 package com.seerlogics.chatbot.noggin;
 
-import com.seerlogics.chatbot.exception.ConversationException;
-import com.seerlogics.chatbot.model.ChatData;
-import com.seerlogics.chatbot.statemachine.DeleteEventStateMachine;
-import com.seerlogics.chatbot.statemachine.SearchEventStateMachine;
-import com.seerlogics.chatbot.statemachine.StateMachineHandler;
-import com.seerlogics.chatbot.statemachine.UnlockAccountStateMachine;
-import com.seerlogics.chatbot.util.ApplicationConstants;
 import com.rabidgremlin.mutters.core.Context;
 import com.rabidgremlin.mutters.core.session.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.seerlogics.chatbot.exception.ConversationException;
+import com.seerlogics.chatbot.exception.StateMachineException;
+import com.seerlogics.chatbot.model.ChatData;
+import com.seerlogics.chatbot.statemachine.StateMachineHandler;
+import com.seerlogics.chatbot.util.ApplicationConstants;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.statemachine.StateMachine;
@@ -41,25 +39,26 @@ public class ChatSession extends Session {
     // this can be used to pass the authentication key to the session such a JWT/oAuth token
     private String authCode;
 
-    @Autowired
-    @Qualifier("searchEventSM")
-    private StateMachine<SearchEventStateMachine.SearchEventsStates,
-                                    SearchEventStateMachine.SearchEventsEvents> searchEventSM;
-
-    @Autowired
-    @Qualifier("deleteEventSM")
-    private StateMachine<DeleteEventStateMachine.DeleteEventsStates,
-                                    DeleteEventStateMachine.DeleteEventsEvents> deleteEventSM;
-    @Autowired
-    @Qualifier("unlockAccountSM")
-    private StateMachine<UnlockAccountStateMachine.UnlockAccountStates,
-                                    UnlockAccountStateMachine.UnlockAccountEvents> unlockAccountSM;
+    @Value("${seerchat.intentToStateMachine}")
+    private String intentToStateMachine;
 
     @PostConstruct
-    private void init() throws Exception {
-        conversationToStateMachineMap.put("SearchEventsNear", searchEventSM);
-        conversationToStateMachineMap.put("DeleteEvents", deleteEventSM);
-        conversationToStateMachineMap.put("HaveLogInIssues", unlockAccountSM);
+    private void init() {
+        String[] intentToStateMachines = StringUtils.split(intentToStateMachine, ",");
+        for (String toStateMachine : intentToStateMachines) {
+            String[] intentToStateMachinesItem = StringUtils.split(toStateMachine, "=");
+            conversationToStateMachineMap.put(intentToStateMachinesItem[0], createUberStateMachine(intentToStateMachinesItem[1]));
+        }
+
+    }
+
+    private StateMachine createUberStateMachine(String stateMachineClass) {
+        try {
+            Class<?> c = Class.forName(stateMachineClass);
+            return (StateMachine) c.getMethod("createStateMachine").invoke(c.newInstance());
+        } catch (Exception e) {
+            throw new StateMachineException(e);
+        }
     }
 
     public Object getAttribute(String attributeName) {
@@ -115,7 +114,7 @@ public class ChatSession extends Session {
         getCurrentStateMachineHandler().moveToNextState(chatRequest.getMessage());
         String responseKey = getCurrentStateMachineHandler().getCurrentState();
         endCurrentConversationIfEndStateReached();
-        String chainedStateMachine = (String)attributes.get(ApplicationConstants.CHAINED_STATE_MACHINE);
+        String chainedStateMachine = (String) attributes.get(ApplicationConstants.CHAINED_STATE_MACHINE);
         if (chainedStateMachine != null) {
             startConversation(chainedStateMachine);
             attributes.remove(ApplicationConstants.CHAINED_STATE_MACHINE);
