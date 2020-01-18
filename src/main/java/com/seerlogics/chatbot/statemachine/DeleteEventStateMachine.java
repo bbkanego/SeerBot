@@ -1,10 +1,6 @@
 package com.seerlogics.chatbot.statemachine;
 
 import com.seerlogics.chatbot.util.ApplicationConstants;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.action.Action;
@@ -12,14 +8,12 @@ import org.springframework.statemachine.config.StateMachineBuilder;
 import org.springframework.statemachine.guard.Guard;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.EnumSet;
 
 /**
  * Created by bkane on 10/6/18.
  */
-@Configuration
 public class DeleteEventStateMachine extends UberStateMachine {
     public enum DeleteEventsStates implements UberStates {
         START_SEARCH_EVENTS, ZIP_PROVIDED, RENTER_ZIP, SEARCH_EVENTS, SE_QUIT
@@ -34,9 +28,7 @@ public class DeleteEventStateMachine extends UberStateMachine {
         currentStateToNextEvent.put(DeleteEventsStates.RENTER_ZIP, DeleteEventsEvents.USER_PROVIDES_ZIP);
     }
 
-    @Bean(name = "deleteEventSM")
-    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public StateMachine<DeleteEventsStates, DeleteEventsEvents> deleteEventSM() throws Exception {
+    public StateMachine<DeleteEventsStates, DeleteEventsEvents> createStateMachine() throws Exception {
         StateMachineBuilder.Builder<DeleteEventsStates, DeleteEventsEvents> builder = StateMachineBuilder.builder();
 
         builder.configureStates()

@@ -7,17 +7,14 @@
         <groupId>com.seerlogics</groupId>
         <artifactId>seerlogics-bom</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <!--<relativePath>../SeerlogicsBom/pom.xml</relativePath>-->
     </parent>
 
-    <artifactId>seerlogics-shared-bot</artifactId>
+    <artifactId>seerlogics-bot-statemachine</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>${project.packaging}</packaging>
+    <packaging>jar</packaging>
 
-    <name>SeerlogicsSharedBot</name>
-    <description>Shared Bot implementation. This will contain the core code and logic for bots. New bots will be
-        cloned from this reference bot.
-    </description>
+    <name>SeerLogicsStateMachine</name>
+    <description>This will have statemachine or workflow related support</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,46 +28,6 @@
         <dependency>
             <groupId>com.seerlogics</groupId>
             <artifactId>seerlogics-bot-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rabidgremlin</groupId>
-            <artifactId>mutters-ink-bot</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rabidgremlin</groupId>
-            <artifactId>mutters-opennlp-intent</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rabidgremlin</groupId>
-            <artifactId>mutters-opennlp-ner</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rabidgremlin</groupId>
-            <artifactId>mutters-slots</artifactId>
         </dependency>
 
         <dependency>
@@ -89,21 +46,10 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>com.lingoace</groupId>
-            <artifactId>eg-spring</artifactId>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity -->
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
@@ -123,256 +69,6 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>28.0-jre</version>
-        </dependency>
-
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>local</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <spring.profiles.active>local</spring.profiles.active>
-                <project.packaging>jar</project.packaging>
-            </properties>
-        </profile>
-
-        <profile>
-            <!--
-                http://dolszewski.com/spring/dual-jar-war-build-for-spring-boot/
-            -->
-            <id>local-war</id>
-            <properties>
-                <spring.profiles.active>local</spring.profiles.active>
-                <project.packaging>war</project.packaging>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                    <version>${javax.servlet-api.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>spring-boot-starter-tomcat</artifactId>
-                            <groupId>org.springframework.boot</groupId>
-                        </exclusion>
-                        <!-- Exclude the logback dependency which is default in spring boot. -->
-                        <exclusion>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-logging</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-simple</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>local-mysql-jar</id>
-            <properties>
-                <spring.profiles.active>local-mysql</spring.profiles.active>
-                <project.packaging>jar</project.packaging>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>mysql</groupId>
-                    <artifactId>mysql-connector-java</artifactId>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <!--
-                http://dolszewski.com/spring/dual-jar-war-build-for-spring-boot/
-            -->
-            <id>local-mysql-war</id>
-            <properties>
-                <spring.profiles.active>local-mysql</spring.profiles.active>
-                <project.packaging>war</project.packaging>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                    <version>${javax.servlet-api.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>spring-boot-starter-tomcat</artifactId>
-                            <groupId>org.springframework.boot</groupId>
-                        </exclusion>
-                        <!-- Exclude the logback dependency which is default in spring boot. -->
-                        <exclusion>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-logging</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-simple</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>mysql</groupId>
-                    <artifactId>mysql-connector-java</artifactId>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>aws-ec2</id>
-            <properties>
-                <spring.profiles.active>aws-ec2</spring.profiles.active>
-                <project.packaging>jar</project.packaging>
-            </properties>
-        </profile>
-        <profile>
-            <!--
-                http://dolszewski.com/spring/dual-jar-war-build-for-spring-boot/
-            -->
-            <id>aws-ec2-war</id>
-            <properties>
-                <spring.profiles.active>aws-ec2</spring.profiles.active>
-                <project.packaging>war</project.packaging>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>spring-boot-starter-tomcat</artifactId>
-                            <groupId>org.springframework.boot</groupId>
-                        </exclusion>
-                        <!-- Exclude the logback dependency which is default in spring boot. -->
-                        <exclusion>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-logging</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-simple</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                    <version>${javax.servlet-api.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
-    <build>
-        <resources>
-            <!--
-                We do filtering so that we can set the active profile when we build the jar itself.
-            -->
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-
-            <!--
-                The below plugins will make sure that the files with extension below are not filtered. If filtered
-                then that can result in file corruption.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <nonFilteredFileExtensions>
-                        <nonFilteredFileExtension>train</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>json</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>bin</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>html</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>vm</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>sql</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>ink</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>xml</nonFilteredFileExtension>
-                    </nonFilteredFileExtensions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build-info</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludeGroupIds>
-                        com.datastax.cassandra,org.apache.activemq,org.apache.tiles,mysql,org.ow2.asm,org.springframework.data.cassandra,org.hdrhistogram,org.fusesource.hawtbuf
-                    </excludeGroupIds>
-                </configuration>
-            </plugin>
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <id>zip-artifacts</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy file="/home/bkane/svn/code/java/BotAdmin/target/classes/apps/chatbot/src/main/resources/nlp/models/custom/en-cat-eventgenie-intents-dynamic.bin"
-                                      toDir="${project.build.directory}/classes/nlp/models/custom"/>
-                            </target>
-                            <target>
-                                <copy file="/home/bkane/svn/code/java/BotAdmin/src/main/resources/apps/chatbot/src/main/resources/nlp/models/custom/en-cat-eventgenie-intents-dynamic.bin"
-                                      toDir="${project.build.directory}/classes/nlp/models/custom"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
-        </plugins>
-    </build>
-
 
 </project>

@@ -1,12 +1,6 @@
 package com.seerlogics.chatbot.statemachine;
 
-import com.seerlogics.chatbot.service.ChatDataFetchService;
 import com.seerlogics.chatbot.util.ApplicationConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.action.Action;
@@ -14,14 +8,12 @@ import org.springframework.statemachine.config.StateMachineBuilder;
 import org.springframework.statemachine.guard.Guard;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.EnumSet;
 
 /**
  * Created by bkane on 10/6/18.
  */
-@Configuration
 public class SearchEventStateMachine extends UberStateMachine {
     public enum SearchEventsStates implements UberStates {
         START_SEARCH_EVENTS, ZIP_PROVIDED, RENTER_ZIP, SEARCH_EVENTS, SE_QUIT
@@ -36,12 +28,7 @@ public class SearchEventStateMachine extends UberStateMachine {
         currentStateToNextEvent.put(SearchEventsStates.RENTER_ZIP, SearchEventsEvents.USER_PROVIDES_ZIP);
     }
 
-    @Autowired
-    private ChatDataFetchService chatDataFetchService;
-
-    @Bean(name = "searchEventSM")
-    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public StateMachine<SearchEventsStates, SearchEventsEvents> getSearchEventSM() throws Exception {
+    public StateMachine<SearchEventsStates, SearchEventsEvents> createStateMachine() throws Exception {
         StateMachineBuilder.Builder<SearchEventsStates, SearchEventsEvents> builder = StateMachineBuilder.builder();
 
         builder.configureStates()
@@ -101,7 +88,7 @@ public class SearchEventStateMachine extends UberStateMachine {
             @Override
             public void execute(StateContext<SearchEventsStates, SearchEventsEvents> context) {
                 String data = (String) context.getMessageHeaders().get("data");
-                String response = chatDataFetchService.getNearbyEvents(data);
+                String response = "";
                 addConversationAttribute(context, SearchEventsStates.SEARCH_EVENTS.name() + "CustomResponse", response);
                 // stop the state machine after the events are searched for the supplied zip
                 addExtendedStateAttribute(context, ApplicationConstants.STOP_STATE_MACHINE, true);

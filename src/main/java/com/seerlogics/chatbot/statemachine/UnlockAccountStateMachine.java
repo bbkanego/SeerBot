@@ -1,9 +1,5 @@
 package com.seerlogics.chatbot.statemachine;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.action.Action;
@@ -11,7 +7,6 @@ import org.springframework.statemachine.config.StateMachineBuilder;
 import org.springframework.statemachine.guard.Guard;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +16,6 @@ import java.util.EnumSet;
 /**
  * Created by bkane on 10/6/18.
  */
-@Configuration
 public class UnlockAccountStateMachine extends UberStateMachine {
     public enum UnlockAccountStates implements UberStates {
         START_UNLOCK_ACCOUNT, DOB_PROVIDED, INVALID_DOB_PROVIDED, VALID_DOB_PROVIDED,
@@ -39,9 +33,7 @@ public class UnlockAccountStateMachine extends UberStateMachine {
         currentStateToNextEvent.put(UnlockAccountStates.INVALID_PIN_PROVIDED, UnlockAccountEvents.USER_PROVIDES_PIN);
     }
 
-    @Bean(name = "unlockAccountSM")
-    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public StateMachine<UnlockAccountStates, UnlockAccountEvents> getSearchEventSM() throws Exception {
+    public StateMachine<UnlockAccountStates, UnlockAccountEvents> createStateMachine() throws Exception {
         StateMachineBuilder.Builder<UnlockAccountStates, UnlockAccountEvents> builder = StateMachineBuilder.builder();
 
         builder.configureStates()

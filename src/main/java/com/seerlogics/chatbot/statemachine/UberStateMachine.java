@@ -2,6 +2,7 @@ package com.seerlogics.chatbot.statemachine;
 
 import com.seerlogics.chatbot.util.ApplicationConstants;
 import org.springframework.statemachine.StateContext;
+import org.springframework.statemachine.StateMachine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Map;
 /**
  * Created by bkane on 10/6/18.
  */
-public class UberStateMachine {
+public abstract class UberStateMachine<S, E> {
 
     public static Map<UberStates, UberEvents> currentStateToNextEvent = new HashMap<>();
 
@@ -25,15 +26,15 @@ public class UberStateMachine {
         String name();
     }
 
-    protected void addExtendedStateAttribute(StateContext context, String attributeKey, Object attributeValue) {
+    protected static void addExtendedStateAttribute(StateContext context, String attributeKey, Object attributeValue) {
         context.getStateMachine().getExtendedState().getVariables().put(attributeKey, attributeValue);
     }
 
-    protected void setStopStateMachineFlag(StateContext context) {
+    protected static void setStopStateMachineFlag(StateContext context) {
         addExtendedStateAttribute(context, ApplicationConstants.STOP_STATE_MACHINE, true);
     }
 
-    protected Object getConversationAttribute(StateContext context, String attributeKey) {
+    protected static Object getConversationAttribute(StateContext context, String attributeKey) {
         Map conversationAttributes = (Map) context.getExtendedState().getVariables()
                 .get(ApplicationConstants.CONVERSATION_ATTRIBUTES);
         if (conversationAttributes != null) {
@@ -43,11 +44,13 @@ public class UberStateMachine {
         }
     }
 
-    protected void addConversationAttribute(StateContext context, String attributeKey, Object attributeValue) {
+    protected static void addConversationAttribute(StateContext context, String attributeKey, Object attributeValue) {
         Map conversationAttributes = (Map) context.getExtendedState().getVariables()
                 .get(ApplicationConstants.CONVERSATION_ATTRIBUTES);
         if (conversationAttributes != null) {
             conversationAttributes.put(attributeKey, attributeValue);
         }
     }
+
+    public abstract StateMachine<S, E> createStateMachine() throws Exception;
 }

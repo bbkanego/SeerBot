@@ -29,3 +29,7 @@ java -jar -Dspring.profiles.active=local -Dseerchat.botOwnerId=2903 -Dseerchat.b
 1. Health URL: http://localhost:8099/chatbot/actuator/health
 2. Info URL: http://localhost:8099/chatbot/actuator/info
 3. Chatbots URL: http://localhost:8099/chatbot/api/chats
+
+### Spring state machine errors to know:
+1. ***java.lang.IllegalArgumentException: Payload must not be null:***
+This happens when in the chat window the user enters blank or NULL info.
