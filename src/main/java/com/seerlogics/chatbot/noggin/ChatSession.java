@@ -3,10 +3,10 @@ package com.seerlogics.chatbot.noggin;
 import com.rabidgremlin.mutters.core.Context;
 import com.rabidgremlin.mutters.core.session.Session;
 import com.seerlogics.chatbot.exception.ConversationException;
-import com.seerlogics.chatbot.exception.StateMachineException;
+import com.seerlogics.chatbot.statemachine.exception.StateMachineException;
 import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.statemachine.StateMachineHandler;
-import com.seerlogics.chatbot.util.ApplicationConstants;
+import com.seerlogics.chatbot.statemachine.util.StateMachineConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -104,7 +104,7 @@ public class ChatSession extends Session {
         if (!isConversationActive()) {
             this.currentConversationId = triggerIntent;
             this.currentStateMachineHandler = new StateMachineHandler(conversationToStateMachineMap.get(triggerIntent));
-            this.currentStateMachineHandler.getVariables().put(ApplicationConstants.CONVERSATION_ATTRIBUTES, attributes);
+            this.currentStateMachineHandler.getVariables().put(StateMachineConstants.CONVERSATION_ATTRIBUTES, attributes);
         } else {
             throw new ConversationException("ERROR: There is an active convseration with ID = " + currentConversationId);
         }
@@ -114,10 +114,10 @@ public class ChatSession extends Session {
         getCurrentStateMachineHandler().moveToNextState(chatRequest.getMessage());
         String responseKey = getCurrentStateMachineHandler().getCurrentState();
         endCurrentConversationIfEndStateReached();
-        String chainedStateMachine = (String) attributes.get(ApplicationConstants.CHAINED_STATE_MACHINE);
+        String chainedStateMachine = (String) attributes.get(StateMachineConstants.CHAINED_STATE_MACHINE);
         if (chainedStateMachine != null) {
             startConversation(chainedStateMachine);
-            attributes.remove(ApplicationConstants.CHAINED_STATE_MACHINE);
+            attributes.remove(StateMachineConstants.CHAINED_STATE_MACHINE);
             responseKey = getCurrentStateMachineHandler().getCurrentState();
         }
         return responseKey;
