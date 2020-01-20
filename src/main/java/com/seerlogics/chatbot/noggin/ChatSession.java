@@ -3,9 +3,9 @@ package com.seerlogics.chatbot.noggin;
 import com.rabidgremlin.mutters.core.Context;
 import com.rabidgremlin.mutters.core.session.Session;
 import com.seerlogics.chatbot.exception.ConversationException;
-import com.seerlogics.chatbot.statemachine.exception.StateMachineException;
 import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.statemachine.StateMachineHandler;
+import com.seerlogics.chatbot.statemachine.exception.StateMachineException;
 import com.seerlogics.chatbot.statemachine.util.StateMachineConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,8 +61,13 @@ public class ChatSession extends Session {
         }
     }
 
+    @Override
     public Object getAttribute(String attributeName) {
         return attributes.get(attributeName);
+    }
+
+    public Map<String, Object> getAllAttributes() {
+        return attributes;
     }
 
     public void setAttributes(String attributeName, Object attributeValue) {

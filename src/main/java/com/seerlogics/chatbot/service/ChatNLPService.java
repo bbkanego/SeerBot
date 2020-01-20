@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public class ChatNLPService {
 
     private static final String CHAT_BOT = "ChatBot";
+    public static final String RESOURCE_PREFIX = "res_";
 
     private final ChatRepository chatRepository;
 
@@ -142,25 +143,27 @@ public class ChatNLPService {
 
         if (chatSession.isConversationActive()) {
             String responseKey = chatSession.decideNextResponseInConversation(outChatData);
-            Object customResponse = chatSession.getAttribute(responseKey + "CustomResponse");
+            outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey, chatSession), chatSession));
+            /*Object customResponse = chatSession.getAttribute(RESOURCE_PREFIX
+                                            + responseKey.toLowerCase() + "CustomResponse");
             if (customResponse != null) {
                 String finalResponse = (String) customResponse;
                 if (finalResponse.contains("widget")) {
                     finalResponse = finalResponse.replaceAll("\\n", "");
                     outChatData.setResponse(finalResponse);
                 } else {
-                    outChatData.setResponse(convertToVelocityResponse(getMessage(finalResponse)));
+                    outChatData.setResponse(convertToVelocityResponse(getMessage(finalResponse, chatSession), chatSession));
                 }
             } else {
-                outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey)));
-            }
+                outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey, chatSession), chatSession));
+            }*/
             chatSession.endCurrentConversationIfEndStateReached();
         } else if (match != null && chatSession.isIntentConversationStarter(match.getIntent().getName())) {
             chatSession.startConversation(match.getIntent().getName());
             String responseKey = chatSession.getCurrentStateMachineHandler().getCurrentState();
-            outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey)));
+            outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey, chatSession), chatSession));
         } else {
-            outChatData.setResponse(convertToVelocityResponse(getMessage(match, inputChatRequest)));
+            outChatData.setResponse(convertToVelocityResponse(getMessage(match, inputChatRequest), chatSession));
         }
 
         // out chats will have CHAT_BOT accountId
@@ -197,6 +200,14 @@ public class ChatNLPService {
         return stringWriter.toString().replaceAll("\\n", "");
     }
 
+    private String buildCustomVelocityResponse(String velocityTemplate, ChatSession chatSession) {
+        VelocityContext context = new VelocityContext();
+        context.put("attributes", chatSession.getAllAttributes());
+        StringWriter stringWriter = new StringWriter();
+        velocityEngine.mergeTemplate("/velocity" + velocityTemplate, "UTF-8", context, stringWriter);
+        return stringWriter.toString().replaceAll("\\n", "");
+    }
+
     public ChatData generateInitiateChatResponse(ChatData inChat, ChatSession chatSession) {
         Intent initiateIntent = this.intentRepository.findByIntent(inChat.getMessage(),
                 this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot().getOwner().getId());
@@ -204,11 +215,11 @@ public class ChatNLPService {
         initiateResponse.setMessage(inChat.getMessage());
         if (initiateIntent != null) {
             List<IntentResponse> response = new ArrayList<>(initiateIntent.getResponses());
-            initiateResponse.setResponse(convertToVelocityResponse(response.get(0).getResponse()));
+            initiateResponse.setResponse(convertToVelocityResponse(response.get(0).getResponse(), chatSession));
         } else {
             initiateResponse.setResponse(
                     convertToVelocityResponse(messageSource.getMessage("res_initialResponse",
-                            new Object[]{}, Locale.getDefault())));
+                            new Object[]{}, Locale.getDefault()), chatSession));
         }
         initiateResponse.setChatSessionId(chatSession.getCurrentSessionId());
         initiateResponse.setCurrentSessionId(chatSession.getCurrentSessionId());
@@ -285,14 +296,16 @@ public class ChatNLPService {
         return intentResponses.get(0);
     }
 
-    private String getMessage(String key) {
-        return messageSource.getMessage("res_" + key.toLowerCase(), new Object[]{}, Locale.getDefault());
+    private String getMessage(String key, ChatSession chatSession) {
+        return messageSource.getMessage(RESOURCE_PREFIX + key.toLowerCase(), new Object[]{}, Locale.getDefault());
     }
 
-    private String convertToVelocityResponse(String response) {
+    private String convertToVelocityResponse(String response, ChatSession chatSession) {
         if (response.contains("|")) {
             // this is an options response
             return buildOptionsResponse(response);
+        } else if (response.endsWith(".vm")) { // its a plain response
+            return buildCustomVelocityResponse(response, chatSession);
         } else { // its a plain response
             return buildPlainTextResponse(response);
         }
