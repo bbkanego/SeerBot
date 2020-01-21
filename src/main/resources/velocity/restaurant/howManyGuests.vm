@@ -1,0 +1,24 @@
+{
+"widget": "options",
+"heading": "
+                #if ($attributes.mealOption == "lunch")
+                    #set ($mealType = "Lunch")
+                #elseif ($attributes.mealOption == "dinner")
+                    #set ($mealType = "Dinner")
+                #end
+                #if ($attributes.invalidNumOfGuests == false)
+                    #set ($invalidNumOfGuestsMessage = "")
+                #elseif ($attributes.invalidNumOfGuests == true)
+                    #set ($invalidNumOfGuestsMessage = "Invalid number of guests.")
+                #end
+                $invalidNumOfGuestsMessage How many guests in your $mealType party? We allow a maximum of $attributes.maxGuests guests in the party.",
+"options": [{
+        "option": [
+            {
+            "message": "Quit",
+            "type": "button",
+            "clickResponse": "quit"
+            }
+        ]
+        }]
+}

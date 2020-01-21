@@ -26,6 +26,10 @@
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
+        <Logger name="org.apache.velocity" additivity="false" level="debug">
+            <AppenderRef ref="VendorInfoLogs"/>
+            <AppenderRef ref="VendorErrorLogs"/>
+        </Logger>
         <Logger name="org.hibernate" additivity="false" level="debug">
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>

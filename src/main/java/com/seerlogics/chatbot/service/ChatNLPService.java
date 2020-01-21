@@ -205,7 +205,7 @@ public class ChatNLPService {
         context.put("attributes", chatSession.getAllAttributes());
         StringWriter stringWriter = new StringWriter();
         velocityEngine.mergeTemplate("/velocity" + velocityTemplate, "UTF-8", context, stringWriter);
-        return stringWriter.toString().replaceAll("\\n", "");
+        return stringWriter.toString().replaceAll("\\n", "").replace("\\t", "");
     }
 
     public ChatData generateInitiateChatResponse(ChatData inChat, ChatSession chatSession) {
