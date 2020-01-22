@@ -1,6 +1,6 @@
 {
 "widget": "text",
-"content": "<div>We have you are all set for a party of <b>$attributes.numOfGuests</b>
+"content": "<div>Perfect. We have you are all set for a party of <b>$attributes.numOfGuests</b>
                 between <b>$attributes.timeSlot</b> for a delicious <b>$attributes.mealOption</b>.
             Please arrive 10 mins before your time slot. See you then!</div>"
 }
