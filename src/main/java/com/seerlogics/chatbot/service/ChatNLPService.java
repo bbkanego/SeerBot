@@ -141,7 +141,9 @@ public class ChatNLPService {
 
         outChatData.setMessage(inputChatRequest.getMessage());
 
+        boolean isConversation = false;
         if (chatSession.isConversationActive()) {
+            isConversation = true;
             String responseKey = chatSession.decideNextResponseInConversation(outChatData);
             outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey, chatSession), chatSession));
             /*Object customResponse = chatSession.getAttribute(RESOURCE_PREFIX
@@ -162,6 +164,7 @@ public class ChatNLPService {
             chatSession.startConversation(match.getIntent().getName());
             String responseKey = chatSession.getCurrentStateMachineHandler().getCurrentState();
             outChatData.setResponse(convertToVelocityResponse(getMessage(responseKey, chatSession), chatSession));
+            isConversation = true;
         } else {
             outChatData.setResponse(convertToVelocityResponse(getMessage(match, inputChatRequest), chatSession));
         }
@@ -181,8 +184,11 @@ public class ChatNLPService {
         transaction.setAccountId(owner.getId());
         transaction.setTargetBotId(this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getId());
         transaction.setSuccess(match != null);
-        if (match != null) {
+        if (match != null && !isConversation) {
             transaction.setIntent(match.getIntent().getName());
+        } else if (isConversation) {
+            transaction.setIntent(chatSession.getCurrentConversationId());
+            transaction.setSuccess(true);
         } else {
             transaction.setIntent("NO_MATCH");
         }

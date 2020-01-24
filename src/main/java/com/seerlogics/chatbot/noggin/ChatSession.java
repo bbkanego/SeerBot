@@ -16,10 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by bkane on 5/4/18.
@@ -107,7 +104,7 @@ public class ChatSession extends Session {
 
     public void startConversation(String triggerIntent) {
         if (!isConversationActive()) {
-            this.currentConversationId = triggerIntent;
+            this.currentConversationId = triggerIntent + "_" + UUID.randomUUID();
             this.currentStateMachineHandler = new StateMachineHandler(conversationToStateMachineMap.get(triggerIntent));
             this.currentStateMachineHandler.getVariables().put(StateMachineConstants.CONVERSATION_ATTRIBUTES, attributes);
         } else {
