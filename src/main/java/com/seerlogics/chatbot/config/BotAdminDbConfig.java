@@ -1,11 +1,13 @@
 package com.seerlogics.chatbot.config;
 
+import com.seerlogics.commons.config.HibernateConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -23,6 +25,7 @@ import java.util.Map;
  * https://medium.com/@joeclever/using-multiple-datasources-with-spring-boot-and-spring-data-6430b00c02e7
  */
 @Configuration
+@ComponentScan(basePackages = {"com.seerlogics.commons.config"})
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "botAdminEntityManagerFactory",
@@ -30,23 +33,14 @@ import java.util.Map;
 )
 public class BotAdminDbConfig {
 
-    @Value("${botadmin.datasource.hibernate.ddl-auto:update}")
-    private String hibernateHbm2ddlValue;
-
-    @Value("${botadmin.datasource.hibernate.jdbc.time_zone:UTC}")
-    private String hibernateJDBCTimezone;
-
-    @Value("${botadmin.datasource.hibernate.show_sql:false}")
-    private Boolean hibernateShowSQL;
+    @Autowired
+    private HibernateConfig hibernateConfig;
 
     @Bean(name = "botAdminDataSource")
     @ConfigurationProperties(prefix = "botadmin.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
-
-    @Value("${botadmin.datasource.hibernate.naming.physical-strategy:com.seerlogics.commons.naming.CustomPhysicalNamingStrategy}")
-    private String namingStrategy;
 
     @Bean(name = "botAdminEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
@@ -56,10 +50,11 @@ public class BotAdminDbConfig {
     ) {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", this.hibernateHbm2ddlValue);
-        properties.put("hibernate.jdbc.time_zone", this.hibernateJDBCTimezone);
-        properties.put("hibernate.show_sql", this.hibernateShowSQL);
-        properties.put("hibernate.physical_naming_strategy", this.namingStrategy);
+        properties.put("hibernate.hbm2ddl.auto", this.hibernateConfig.getBotAdminHibernateHbm2ddlValue());
+        properties.put("hibernate.jdbc.time_zone", this.hibernateConfig.getBotAdminHibernateJDBCTimezone());
+        properties.put("hibernate.show_sql", this.hibernateConfig.getBotAdminHibernateShowSQL());
+        properties.put("hibernate.physical_naming_strategy", this.hibernateConfig.getBotAdminNamingStrategy());
+        properties.put("hibernate.dialect", this.hibernateConfig.getBotAdminHibernateDialect());
 
         return builder
                 .dataSource(dataSource)
