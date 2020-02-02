@@ -142,6 +142,8 @@ public class ChatNLPService {
         outChatData.setMessage(inputChatRequest.getMessage());
 
         boolean isConversation = false;
+        // set the converation id before it gets wiped out below in case user calls it quits
+        String conversationId = chatSession.getCurrentConversationId();
         if (chatSession.isConversationActive()) {
             isConversation = true;
             String responseKey = chatSession.decideNextResponseInConversation(outChatData);
@@ -187,7 +189,7 @@ public class ChatNLPService {
         if (match != null && !isConversation) {
             transaction.setIntent(match.getIntent().getName());
         } else if (isConversation) {
-            transaction.setIntent(chatSession.getCurrentConversationId());
+            transaction.setIntent(conversationId);
             transaction.setSuccess(true);
         } else {
             transaction.setIntent("NO_MATCH");
