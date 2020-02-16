@@ -34,6 +34,17 @@
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
+
+        <!-- logs the SQL statements -->
+        <logger name="org.hibernate.SQL" additivity="false" level="debug">
+            <AppenderRef ref="AppDebugLogs"/>
+        </logger>
+
+        <!-- Logs the JDBC parameters passed to a query -->
+        <logger name="org.hibernate.type" additivity="false" level="trace">
+            <AppenderRef ref="AppDebugLogs"/>
+        </logger>
+
         <!--
             All other info logs, dump to console and VendorInfoLogs
         -->
