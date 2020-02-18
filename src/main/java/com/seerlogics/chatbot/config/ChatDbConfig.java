@@ -26,7 +26,7 @@ import java.util.Map;
  * https://medium.com/@joeclever/using-multiple-datasources-with-spring-boot-and-spring-data-6430b00c02e7
  */
 @Configuration
-@ComponentScan(basePackages = {"com.seerlogics.commons.config"})
+@ComponentScan(basePackages = {"com.seerlogics.chatbot.config"})
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "chatBotEntityManagerFactory",
@@ -60,7 +60,7 @@ public class ChatDbConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.seerlogics.chatbot")
+                .packages("com.seerlogics.chatbot.model")
                 .persistenceUnit("chatbot")
                 .properties(properties)
                 .build();

@@ -34,6 +34,12 @@
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
+        <Logger name="org.hibernate.type" additivity="false" level="trace">
+            <AppenderRef ref="AppDebugLogs"/>
+        </Logger>
+        <Logger name="org.hibernate.SQL" additivity="false" level="debug">
+            <AppenderRef ref="AppDebugLogs"/>
+        </Logger>
         <!--
             All other info logs, dump to console and VendorInfoLogs
         -->
