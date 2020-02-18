@@ -39,6 +39,7 @@ public class ChatNLPService {
 
     private static final String CHAT_BOT = "ChatBot";
     public static final String RESOURCE_PREFIX = "res_";
+    public static final String UTF_8 = "UTF-8";
 
     private final ChatRepository chatRepository;
 
@@ -194,6 +195,8 @@ public class ChatNLPService {
         } else {
             transaction.setIntent("NO_MATCH");
         }
+        transaction.setResolved(false);
+        transaction.setIgnore(false);
         transaction.setUtterance(inputChatRequest.getMessage());
         transactionRepository.save(transaction);
 
@@ -204,7 +207,7 @@ public class ChatNLPService {
         VelocityContext context = new VelocityContext();
         context.put("response", response);
         StringWriter stringWriter = new StringWriter();
-        velocityEngine.mergeTemplate("/velocity/simpleTexts.vm", "UTF-8", context, stringWriter);
+        velocityEngine.mergeTemplate("/velocity/simpleTexts.vm", UTF_8, context, stringWriter);
         return stringWriter.toString().replaceAll("\\n", "");
     }
 
@@ -212,7 +215,7 @@ public class ChatNLPService {
         VelocityContext context = new VelocityContext();
         context.put("attributes", chatSession.getAllAttributes());
         StringWriter stringWriter = new StringWriter();
-        velocityEngine.mergeTemplate("/velocity" + velocityTemplate, "UTF-8", context, stringWriter);
+        velocityEngine.mergeTemplate("/velocity" + velocityTemplate, UTF_8, context, stringWriter);
         return stringWriter.toString().replaceAll("\\n", "").replace("\\t", "");
     }
 
