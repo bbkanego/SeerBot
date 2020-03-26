@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Properties>
     <!-- seerchat.botOwnerId is a System arg that will be provided as eg -Dseerchat.botOwnerId=62552 -->
-    <Property name="LOG_PATH">${sys:user.home}/seerBot/account_${sys:seerchat.botOwnerId}_${sys:seerchat.botId}/logs</Property>
+    <Property name="LOG_PATH">${sys:user.home}/seerBot/logs</Property>
     <Property name="LOG_PATTERN">
         %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] %-40.40c{1.} : %m%n%ex
     </Property>
