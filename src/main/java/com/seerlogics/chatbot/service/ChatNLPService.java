@@ -2,6 +2,7 @@ package com.seerlogics.chatbot.service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.lingoace.util.CommonUtil;
 import com.rabidgremlin.mutters.core.IntentMatch;
 import com.seerlogics.chatbot.exception.ConversationException;
 import com.seerlogics.chatbot.model.ChatData;
@@ -10,7 +11,13 @@ import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
 import com.seerlogics.chatbot.noggin.ChatSession;
 import com.seerlogics.chatbot.repository.ChatRepository;
 import com.seerlogics.chatbot.repository.TransactionRepository;
+import com.seerlogics.commons.CommonUtils;
+import com.seerlogics.commons.dto.SearchIntents;
+import com.seerlogics.commons.exception.DuplicateEntitiesFoundException;
+import com.seerlogics.commons.exception.NoEntityFoundException;
+import com.seerlogics.commons.exception.UIDisplayException;
 import com.seerlogics.commons.model.Account;
+import com.seerlogics.commons.model.Bot;
 import com.seerlogics.commons.model.Intent;
 import com.seerlogics.commons.model.IntentResponse;
 import com.seerlogics.commons.repository.BotRepository;
@@ -219,9 +226,25 @@ public class ChatNLPService {
         return stringWriter.toString().replaceAll("\\n", "").replace("\\t", "");
     }
 
+    private Intent getIntentForIntentName(String intentName, Bot targetBot) {
+        SearchIntents searchIntents = new SearchIntents();
+        searchIntents.setIntentName(intentName);
+        searchIntents.setCategory(targetBot.getCategory());
+        searchIntents.setOwnerAccount(targetBot.getOwner());
+        List<Intent> matchingIntents = this.intentRepository.findIntentsAndUtterances(searchIntents);
+        if (matchingIntents.size() > 1) {
+            String message = "Duplicate Intents found for intent = " + intentName;
+            CommonUtils.throwUIDisplayException(message, new DuplicateEntitiesFoundException(message));
+        } else if (matchingIntents.size() == 0) {
+            String message = "No Intents found for for intent = " + intentName;
+            CommonUtils.throwUIDisplayException(message, new NoEntityFoundException(message));
+        }
+        return matchingIntents.get(0);
+    }
+
     public ChatData generateInitiateChatResponse(ChatData inChat, ChatSession chatSession) {
-        Intent initiateIntent = this.intentRepository.findByIntent(inChat.getMessage(),
-                this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot().getOwner().getId());
+        Bot targetBot = this.getSeerBotConfiguration(inChat.getAuthCode()).getTargetBot();
+        Intent initiateIntent = getIntentForIntentName(inChat.getMessage(), targetBot);
         ChatData initiateResponse = new ChatData();
         initiateResponse.setMessage(inChat.getMessage());
         if (initiateIntent != null) {
@@ -269,9 +292,9 @@ public class ChatNLPService {
                 responseToSend = intentResponses.get(0);
             } else if (matchingIntent != null) { // this will happen when there is a MayBe match
                 com.rabidgremlin.mutters.core.Intent maybeIntent = intent.getIntent();
+                Bot targetBot = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot();
                 String mayBeIntentName = maybeIntent.getName();
-                Intent dbMayBeIntent = intentRepository.findByIntent(mayBeIntentName,
-                        this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot().getOwner().getId());
+                Intent dbMayBeIntent = getIntentForIntentName(mayBeIntentName, targetBot);
                 if (dbMayBeIntent != null) {
                     List<IntentResponse> intentResponses =
                             dbMayBeIntent.getResponses().stream().filter(
@@ -294,10 +317,8 @@ public class ChatNLPService {
     }
 
     private IntentResponse getDoNotUnderstandIntent(ChatData inputChatRequest) {
-        Long botOwnerId = this.getSeerBotConfiguration(inputChatRequest.getAuthCode())
-                .getTargetBot().getOwner().getId();
-        Intent doNotUnderstandIntent =
-                intentRepository.findByIntent("DoNotUnderstandIntent", botOwnerId);
+        Bot targetBot = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).getTargetBot();
+        Intent doNotUnderstandIntent = getIntentForIntentName("DoNotUnderstandIntent", targetBot);
         List<IntentResponse> intentResponses =
                 doNotUnderstandIntent.getResponses().stream().filter(intentResponse ->
                         intentResponse.getLocale().contains("en")).collect(Collectors.toList());

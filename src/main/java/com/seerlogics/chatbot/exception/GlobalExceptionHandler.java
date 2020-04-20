@@ -2,6 +2,7 @@ package com.seerlogics.chatbot.exception;
 
 import com.lingoace.model.ExceptionModel;
 import com.seerlogics.commons.exception.BaseRuntimeException;
+import com.seerlogics.commons.exception.UIDisplayException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -82,5 +83,13 @@ public class GlobalExceptionHandler extends com.lingoace.common.GlobalExceptionH
         } else {
             return buildUnknownErrorMessageResponse(e);
         }
+    }
+
+    @ExceptionHandler(UIDisplayException.class)
+    public Object catchUIDisplayException(UIDisplayException e) {
+        this.buildUnknownErrorMessageResponse(e);
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put(MESSAGE, e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
