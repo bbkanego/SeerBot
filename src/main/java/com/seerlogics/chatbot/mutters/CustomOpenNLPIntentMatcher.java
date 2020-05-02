@@ -1,5 +1,6 @@
 package com.seerlogics.chatbot.mutters;
 
+import com.rabidgremlin.mutters.core.Intent;
 import com.rabidgremlin.mutters.core.SlotMatcher;
 import com.rabidgremlin.mutters.core.Tokenizer;
 import com.rabidgremlin.mutters.core.ml.AbstractMachineLearningIntentMatcher;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -24,10 +26,21 @@ public class CustomOpenNLPIntentMatcher extends AbstractMachineLearningIntentMat
      */
     private DoccatModel model;
 
+    private HashMap<String, Intent> intentsCopy = new HashMap<>();
+
     /**
      * Default minimum match score.
      */
     private static final float MIN_MATCH_SCORE = 0.75f;
+
+    public HashMap<String, Intent> getIntentsCopy() {
+        return intentsCopy;
+    }
+
+    public void addIntentCopy(Intent intent) {
+        this.intentsCopy.put(intent.getName().toUpperCase(), intent);
+    }
+
 
     /**
      * Constructor. Sets up the matcher to use the specified model (via a URL) and specifies the minimum and maybe match
@@ -54,7 +67,9 @@ public class CustomOpenNLPIntentMatcher extends AbstractMachineLearningIntentMat
     protected SortedMap<Double, Set<String>> generateSortedScoreMap(String[] utteranceTokens) {
         DocumentCategorizerME intentCategorizer = new DocumentCategorizerME(model);
         double[] outcome = intentCategorizer.categorize(utteranceTokens);
-        LOGGER.debug("action=" + intentCategorizer.getBestCategory(outcome));
-        return intentCategorizer.sortedScoreMap(utteranceTokens);
+        LOGGER.debug("Best Category matched = " + intentCategorizer.getBestCategory(outcome));
+        SortedMap<Double, Set<String>> sortedBestMatches = intentCategorizer.sortedScoreMap(utteranceTokens);
+        LOGGER.debug("Sorted best matches = " + sortedBestMatches);
+        return sortedBestMatches;
     }
 }

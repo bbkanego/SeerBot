@@ -22,22 +22,22 @@
             <AppenderRef ref="AppDebugLogs"/>
             <AppenderRef ref="AppErrorLogs"/>
         </Logger>
-        <Logger name="org.springframework" additivity="false" level="debug">
+        <Logger name="org.springframework" additivity="false" level="info">
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
-        <Logger name="org.apache.velocity" additivity="false" level="debug">
+        <Logger name="org.apache.velocity" additivity="false" level="info">
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
-        <Logger name="org.hibernate" additivity="false" level="debug">
+        <Logger name="org.hibernate" additivity="false" level="info">
             <AppenderRef ref="VendorInfoLogs"/>
             <AppenderRef ref="VendorErrorLogs"/>
         </Logger>
-        <Logger name="org.hibernate.type" additivity="false" level="trace">
+        <Logger name="org.hibernate.type" additivity="false" level="info">
             <AppenderRef ref="AppDebugLogs"/>
         </Logger>
-        <Logger name="org.hibernate.SQL" additivity="false" level="debug">
+        <Logger name="org.hibernate.SQL" additivity="false" level="info">
             <AppenderRef ref="AppDebugLogs"/>
         </Logger>
         <!--

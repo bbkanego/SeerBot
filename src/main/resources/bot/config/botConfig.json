@@ -8,7 +8,7 @@
     }
   ],
   "nlpIntentMatcher": {
-    "minMatchScore": "0.90f",
+    "minMatchScore": "0.60f",
     "maybeMatchScore": "0.50f"
   }
 }

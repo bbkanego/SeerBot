@@ -4,9 +4,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.lingoace.util.CommonUtil;
 import com.rabidgremlin.mutters.core.IntentMatch;
+import com.rabidgremlin.mutters.core.IntentMatcher;
 import com.seerlogics.chatbot.exception.ConversationException;
 import com.seerlogics.chatbot.model.ChatData;
 import com.seerlogics.chatbot.model.Transaction;
+import com.seerlogics.chatbot.mutters.CustomOpenNLPIntentMatcher;
 import com.seerlogics.chatbot.mutters.SeerBotConfiguration;
 import com.seerlogics.chatbot.noggin.ChatSession;
 import com.seerlogics.chatbot.repository.ChatRepository;
@@ -89,7 +91,7 @@ public class ChatNLPService {
          * The cache will be thread safe natively and will be accessed by 4 threads concurrently
          */
         seerBotConfigurationCache =
-                CacheBuilder.newBuilder().concurrencyLevel(4).maximumSize(100000)
+                CacheBuilder.newBuilder().concurrencyLevel(10000).maximumSize(100000)
                         // expire items after 1 hour if not accessed in that time
                         .expireAfterAccess(3600, TimeUnit.SECONDS).build();
     }
@@ -143,9 +145,15 @@ public class ChatNLPService {
 
         // create new reply message and save that to the DB
         ChatData outChatData = new ChatData();
-        //outChatData.setResponse(intentProcessor.nlpPipeline(inputChatRequest, chatSession));
-        IntentMatch match = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).
-                getIntentMatcher().match(inputChatRequest.getMessage(), chatSession.getContext(), null, new HashMap<>());
+
+        IntentMatcher intentMatcher = this.getSeerBotConfiguration(inputChatRequest.getAuthCode()).
+                getIntentMatcher();
+        IntentMatch match = handleSalutation(inputChatRequest.getMessage(), intentMatcher);
+
+        if (match == null) {
+            match = intentMatcher.match(inputChatRequest.getMessage(), chatSession.getContext(),
+                    null, new HashMap<>());
+        }
 
         outChatData.setMessage(inputChatRequest.getMessage());
 
@@ -411,6 +419,25 @@ public class ChatNLPService {
         StringWriter stringWriter = new StringWriter();
         velocityEngine.mergeTemplate("/velocity/maybeOptions.vm", "UTF-8", context, stringWriter);
         return stringWriter.toString().replaceAll("\\n", "");
+    }
+
+    public IntentMatch handleSalutation(String message, IntentMatcher intentMatcher) {
+        CustomOpenNLPIntentMatcher customOpenNLPIntentMatcher = (CustomOpenNLPIntentMatcher) intentMatcher;
+        String[] wordsInMessage = message.split(" ");
+        List<String> saluations = Arrays.asList("Hi".toUpperCase(), "Hello".toUpperCase(),
+                "Ola".toUpperCase(), "Namaste".toUpperCase(), "Chiao".toUpperCase());
+        boolean containsSalutation = true;
+        for (String s : wordsInMessage) {
+            if (!saluations.contains(s.trim().toUpperCase())) {
+                containsSalutation = false;
+            }
+        }
+
+        if (containsSalutation) {
+            com.rabidgremlin.mutters.core.Intent intent = customOpenNLPIntentMatcher.getIntentsCopy().get("HI");
+            return new IntentMatch(intent, null, message);
+        }
+        return null;
     }
 
     public List<ChatData> findByAccountId(String userName) {

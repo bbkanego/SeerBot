@@ -149,6 +149,7 @@ public class SeerBotConfiguration {
         for (com.seerlogics.commons.model.Intent customIntentUtterance : customIntentUtterances) {
             Intent currentIntent = new Intent(customIntentUtterance.getIntent(), customIntentUtterance);
             matcher.addIntent(currentIntent);
+            matcher.addIntentCopy(currentIntent);
         }
 
         LOGGER.debug("\n*********Done******\n");
