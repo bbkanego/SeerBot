@@ -203,7 +203,6 @@ public class StopWords {
         stopWords.add("yourself");
         stopWords.add("yourselves ");
         stopWords.add("please");
-        stopWords.add("help");
         stopWords.add("can");
         //stopWords.add("you");
     }

@@ -6,6 +6,7 @@ import com.rabidgremlin.mutters.core.Tokenizer;
 import com.rabidgremlin.mutters.core.ml.AbstractMachineLearningIntentMatcher;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,7 @@ public class CustomOpenNLPIntentMatcher extends AbstractMachineLearningIntentMat
     protected SortedMap<Double, Set<String>> generateSortedScoreMap(String[] utteranceTokens) {
         DocumentCategorizerME intentCategorizer = new DocumentCategorizerME(model);
         double[] outcome = intentCategorizer.categorize(utteranceTokens);
+        LOGGER.debug("Utterance = " + StringUtils.join(utteranceTokens));
         LOGGER.debug("Best Category matched = " + intentCategorizer.getBestCategory(outcome));
         SortedMap<Double, Set<String>> sortedBestMatches = intentCategorizer.sortedScoreMap(utteranceTokens);
         LOGGER.debug("Sorted best matches = " + sortedBestMatches);
