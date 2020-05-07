@@ -424,11 +424,12 @@ public class ChatNLPService {
     public IntentMatch handleSalutation(String message, IntentMatcher intentMatcher) {
         CustomOpenNLPIntentMatcher customOpenNLPIntentMatcher = (CustomOpenNLPIntentMatcher) intentMatcher;
         String[] wordsInMessage = message.split(" ");
-        List<String> saluations = Arrays.asList("Hi".toUpperCase(), "Hello".toUpperCase(),
+        List<String> saluations = Arrays.asList("Hi".toUpperCase(), "Hello".toUpperCase(), "Hey".toUpperCase(),
                 "Ola".toUpperCase(), "Namaste".toUpperCase(), "Chiao".toUpperCase());
         boolean containsSalutation = true;
         for (String s : wordsInMessage) {
-            if (!saluations.contains(s.trim().toUpperCase())) {
+            if (!saluations.contains(StringUtils.replaceEach(s.trim().toUpperCase(),
+                                        new String[]{"!", "?", "'", "\""}, new String[]{"", "", "", ""}))) {
                 containsSalutation = false;
             }
         }
